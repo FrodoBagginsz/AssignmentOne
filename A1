@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#system Info/ hostname gets hostname / os -release holds os info / uptime is uptime
+hostname=$(hostname)
+os=$(cat /etc/os-release)
+uptime=$(uptime -p)
+date=$(date)
+
+#Hardware Inf /lscpu list cpu/ free gathers memory stats grep pulls the humanreadable part/ lsblk gets disc size / video lspci gets video data
+cpu=$(lscpu)
+ram=$(free -h | grep "Mem:")
+disk=$(lsblk -o NAME,SIZE)
+video=$(lspci | grep VGA)
+
+#Network Info ( -f pulls the domain name hsotname -i gets host ip, grep default gets the gateway cat resolvconf | grep "nameserver only gets the name server")
+fqdn=$(hostname -f)
+host=$(hostname -I)
+gateip=$(ip route | grep default)
+dns=$(cat /etc/resolv.conf | grep "nameserver")
+
+#Interface Info (interfaces are grabbed with -o link show, dont know how to do the ip cidr)
+interfaces=$(ip -o link show )
+ip_address=$(ip -o -4 addr show)
+
+#System Status /shows logged in users/ process count/system load/ memory stats
+logged_in_users=$(who | cut -d' ' -f1 | sort | uniq)
+process_running=$(ps -e | wc -l)
+load=$(cat /proc/loadavg)
+mem_allocation=$(free -h)
+
+# shows disc space for all drives/partitions 
+disk_space=$(df -h --output=target,avail)
+
+# netstat will list listening ports in a table format
+listening_ports=$(netstat -tuln)
+
+# UFW Rules shows ufw commands
+ufw_rules=$(ufw show)
+
+# Generate the system report in a good human readable form (data is pulled from the respective commands and stored in variables
+#variables are then read out(blank echo statements create a space between info lines))
+echo "System Report made by $USER,($date)"
+echo "------------------------------------"
+echo
+echo "Sys-Info"
+echo "------------------------------------"
+echo "Hostname is, $hostname"
+echo "THe OS is, $os"
+echo "System Uptime is, $uptime"
+echo 
+echo "HardWare Stats"
+echo "------------------------------------"
+echo "The Cpu stats are, $cpu"
+echo "The ram stats are, $ram"
+echo "The harddisk stats are, $disk"
+echo "The graphical stats are, $video"
+echo
+echo "Network Information"
+echo "------------------------------------"
+echo "The Full Doamin name is, $fqdn"
+echo "The host ip address is, $host"
+echo "The Default gateway is, $gateip"
+echo "The DNS is, $dns"
+echo "Interfaces on this computer are, $interfaces"
+echo 
+echo "System Status info"
+echo "------------------------------------"
+echo "whos online right now, $logged_in_users"
+echo "How many processes running?, $process_running"
+echo "What is the load average?, $load"
+echo "where is memory allocated, $mem_allocation"
+echo "whos listening on network ports?, $listening_ports"
+echo "Remaining disc space in drives are, $disk_space"
+echo "Firewall data (UFW), $ufw_rules"
